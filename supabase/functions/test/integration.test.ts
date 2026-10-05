@@ -23,6 +23,7 @@ import { routeOptions } from "../_shared/handlers/route-options.ts";
 import { journeyControl } from "../_shared/handlers/journey-control.ts";
 import { createShareLink } from "../_shared/handlers/share-link.ts";
 import { resolveShare } from "../_shared/handlers/resolve-share.ts";
+import { JourneyFollower, liveJourneyState, type BroadcastChannelLike } from "@wave/client";
 import { createHarness, DATABASE_URL, type Harness } from "./harness.ts";
 
 const OWNER = "aaaaaaaa-1111-4111-8111-000000000001";
@@ -325,6 +326,83 @@ describe.skipIf(!DATABASE_URL)("edge functions × Postgres", () => {
         ),
       );
       expect(viewerPosition.elapsedMs).toBeCloseTo(paused.body.clock.anchorSimMs, 6);
+    });
+
+    it("keeps a web viewer in sync through pause, resume, rate change and completion", async () => {
+      const planned = await plan();
+      const { journeyId } = planned;
+      const link = await h.call<CreateShareLinkResult>(createShareLink, {
+        user: OWNER,
+        body: { journeyId },
+      });
+      const view = (
+        await h.call<PublicJourneyView>(resolveShare, { body: { token: link.body.token } })
+      ).body;
+      const timeline = buildTimeline(planFromStoredSegments(view.seed, view.segments));
+
+      // Deliver every broadcast the database sends on the viewer's topic.
+      const handlers = new Map<string, (p: unknown) => void>();
+      const channel: BroadcastChannelLike = {
+        onBroadcast: (event, cb) => handlers.set(event, cb),
+        subscribe: (cb) => {
+          cb("SUBSCRIBED");
+        },
+        unsubscribe: () => undefined,
+      };
+      const follower = new JourneyFollower({
+        topic: view.realtimeTopic,
+        initialClock: view.clock,
+        serverTimeMs: view.serverTimeMs,
+        channelFactory: () => channel,
+      });
+      follower.start();
+      let delivered = 0;
+      const pump = async () => {
+        const rows = await h.sql<{ payload: unknown; event: string }>(
+          "select payload, event from realtime.messages where topic = $1 order by id offset $2",
+          [view.realtimeTopic, delivered],
+        );
+        delivered += rows.length;
+        for (const row of rows) handlers.get(row.event)?.(row.payload);
+      };
+
+      const status = () => {
+        const now = Date.now();
+        return liveJourneyState(timeline, follower.getSnapshot().clock, follower.serverNow(), now);
+      };
+      expect(status().status).toBe("draft");
+
+      await control(journeyId, { type: "start" });
+      await pump();
+      expect(status().status).toBe("active");
+
+      await control(journeyId, { type: "pause" });
+      await pump();
+      expect(status().status).toBe("paused");
+      expect(status().etaLocalMs).toBeNull();
+
+      await control(journeyId, { type: "resume" });
+      await control(journeyId, { type: "set_rate", rate: 5 });
+      await pump();
+      expect(status()).toMatchObject({ status: "active", rate: 5 });
+
+      await control(journeyId, { type: "skip_to_waypoint", index: 0 });
+      await pump();
+      expect(status().sample.segmentIndex).toBe(0);
+      expect(["waypoint_pause", "moving"]).toContain(status().sample.status);
+
+      await control(journeyId, { type: "seek", simMs: planned.totalDurationMs });
+      await pump();
+      const final = status();
+      expect(final.status).toBe("completed");
+      expect(final.sample.progress).toBe(1);
+
+      await h.sql("update public.share_links set revoked_at = now() where id = $1", [link.body.id]);
+      await h.sql("select realtime.send('{\"reason\":\"revoked\"}'::jsonb, 'revoked', $1, true)", [
+        view.realtimeTopic,
+      ]);
+      await pump();
+      expect(follower.getSnapshot().revoked).toBe(true);
     });
 
     it("rejects unknown, malformed and revoked tokens identically", async () => {
