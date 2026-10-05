@@ -1,3 +1,4 @@
+export * from "./version.ts";
 export * from "./random.ts";
 export * from "./profiles.ts";
 export * from "./timeline.ts";

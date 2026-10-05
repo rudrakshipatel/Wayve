@@ -1,13 +1,19 @@
 import type { LngLat } from "./geo.ts";
 import type { JourneyStatus } from "./journey.ts";
+
+export type JourneyKind = "journey" | "static";
 import type { SessionClock } from "./session.ts";
 import type { TravelMode } from "./travel.ts";
 
 /** Minimal, anonymous view of a shared journey. Contains no user or row identifiers. */
 export interface PublicJourneyView {
   readonly title: string;
+  readonly kind: JourneyKind;
   readonly status: JourneyStatus;
   readonly seed: string;
+  /** Simulation engine version that compiled the plan; viewers must use a compatible engine. */
+  readonly engineVersion: string;
+  readonly planVersion: number;
   readonly segments: readonly PublicSegmentView[];
   readonly totalDistanceM: number;
   readonly totalDurationMs: number;
