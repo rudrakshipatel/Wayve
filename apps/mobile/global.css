@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Wave tokens as RGB triplets (mirrors @wave/ui). */
+:root {
+  --wave-bg: 243 244 248;
+  --wave-surface: 255 255 255;
+  --wave-sunken: 236 238 243;
+  --wave-line: 217 221 230;
+  --wave-ink: 19 22 32;
+  --wave-muted: 100 109 131;
+  --wave-tide: 59 84 245;
+  --wave-surf: 18 168 147;
+  --wave-coral: 242 92 71;
+  --wave-amber: 212 136 6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --wave-bg: 7 8 12;
+    --wave-surface: 19 22 32;
+    --wave-sunken: 31 36 49;
+    --wave-line: 51 58 75;
+    --wave-ink: 246 247 250;
+    --wave-muted: 138 147 168;
+    --wave-tide: 97 120 255;
+    --wave-surf: 79 218 198;
+    --wave-coral: 255 122 102;
+    --wave-amber: 255 194 77;
+  }
+}

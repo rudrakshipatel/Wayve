@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "jsx": "react-jsx",
+    "types": [],
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "moduleResolution": "Bundler",
+    "customConditions": ["react-native"],
+    "exactOptionalPropertyTypes": false
+  },
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "nativewind-env.d.ts"],
+  "exclude": ["node_modules", "dist", "web-build"]
+}

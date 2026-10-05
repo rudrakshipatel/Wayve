@@ -18,6 +18,10 @@ export default tseslint.config(
       "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
       "no-console": "error",
+      "@typescript-eslint/prefer-nullish-coalescing": [
+        "error",
+        { ignorePrimitives: { boolean: true } },
+      ],
       // `noUncheckedIndexedAccess` is on; `!` marks index reads already bounds-checked.
       "@typescript-eslint/no-non-null-assertion": "off",
     },
@@ -34,6 +38,20 @@ export default tseslint.config(
     // Edge functions log server-side errors to the platform log.
     files: ["supabase/functions/**/*.ts"],
     rules: { "no-console": ["error", { allow: ["error"] }] },
+  },
+  {
+    // CommonJS tool configs (Metro, Babel, Tailwind).
+    files: ["apps/mobile/*.js", "apps/*/scripts/**/*.mjs"],
+    languageOptions: {
+      sourceType: "commonjs",
+      globals: {
+        require: "readonly",
+        module: "writable",
+        __dirname: "readonly",
+        process: "readonly",
+      },
+    },
+    rules: { "@typescript-eslint/no-require-imports": "off" },
   },
   {
     files: ["**/*.js", "**/*.mjs", "**/*.cjs"],
