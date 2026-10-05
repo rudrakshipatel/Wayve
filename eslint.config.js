@@ -1,6 +1,7 @@
 // @ts-check
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
+import reactHooks from "eslint-plugin-react-hooks";
 
 export default tseslint.config(
   {
@@ -22,12 +23,20 @@ export default tseslint.config(
     },
   },
   {
+    files: ["apps/**/*.{ts,tsx}"],
+    plugins: { "react-hooks": reactHooks },
+    rules: {
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "error",
+    },
+  },
+  {
     // Edge functions log server-side errors to the platform log.
     files: ["supabase/functions/**/*.ts"],
     rules: { "no-console": ["error", { allow: ["error"] }] },
   },
   {
-    files: ["**/*.js"],
+    files: ["**/*.js", "**/*.mjs", "**/*.cjs"],
     ...tseslint.configs.disableTypeChecked,
   },
 );

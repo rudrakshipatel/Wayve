@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+/* Wave design tokens (mirrors @wave/ui). Semantic colours switch with the colour scheme. */
+:root {
+  --wave-bg: #f3f4f8;
+  --wave-surface: rgba(255, 255, 255, 0.86);
+  --wave-surface-solid: #ffffff;
+  --wave-border: rgba(19, 22, 32, 0.08);
+  --wave-text: #131620;
+  --wave-muted: #646d83;
+  --wave-tide: #3b54f5;
+  --wave-surf: #12a893;
+  --wave-coral: #f25c47;
+  --wave-amber: #d48806;
+  --wave-route-ahead: #8a93a8;
+  --wave-shadow: 0 24px 60px -24px rgba(20, 30, 92, 0.35), 0 2px 8px rgba(10, 12, 18, 0.06);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --wave-bg: #07080c;
+    --wave-surface: rgba(19, 22, 32, 0.82);
+    --wave-surface-solid: #131620;
+    --wave-border: rgba(236, 238, 243, 0.08);
+    --wave-text: #f6f7fa;
+    --wave-muted: #8a93a8;
+    --wave-tide: #6178ff;
+    --wave-surf: #4fdac6;
+    --wave-coral: #ff7a66;
+    --wave-amber: #ffc24d;
+    --wave-route-ahead: #4a5266;
+    --wave-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4);
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--wave-bg);
+  --color-surface: var(--wave-surface);
+  --color-surface-solid: var(--wave-surface-solid);
+  --color-line: var(--wave-border);
+  --color-ink: var(--wave-text);
+  --color-muted: var(--wave-muted);
+  --color-tide: var(--wave-tide);
+  --color-surf: var(--wave-surf);
+  --color-coral: var(--wave-coral);
+  --color-amber: var(--wave-amber);
+  --font-display: var(--font-sora), ui-sans-serif, system-ui;
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --radius-panel: 28px;
+  --shadow-panel: var(--wave-shadow);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--wave-bg);
+  color: var(--wave-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings:
+    "tnum" 1,
+    "zero" 1;
+}
+
+/* Fine grain over glass panels for depth. */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+@keyframes wave-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+@keyframes wave-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  animation: wave-rise 640ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+.wave-marker {
+  position: relative;
+  width: 22px;
+  height: 22px;
+}
+.wave-marker__halo {
+  position: absolute;
+  inset: -10px;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--wave-surf) 35%, transparent);
+  animation: wave-breathe 2.4s ease-out infinite;
+}
+.wave-marker[data-paused="true"] .wave-marker__halo {
+  animation: none;
+  opacity: 0.35;
+  background: color-mix(in oklab, var(--wave-amber) 40%, transparent);
+}
+.wave-marker__dot {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, var(--wave-tide), var(--wave-surf));
+  border: 3px solid var(--wave-surface-solid);
+  box-shadow: 0 6px 16px rgba(20, 30, 92, 0.35);
+}
+.wave-marker__heading {
+  position: absolute;
+  left: 50%;
+  top: -14px;
+  width: 0;
+  height: 0;
+  margin-left: -6px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 9px solid var(--wave-tide);
+  transform-origin: 6px 25px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wave-marker__halo,
+  .animate-rise {
+    animation: none;
+  }
+}
+
+.mapboxgl-ctrl-logo,
+.mapboxgl-ctrl-attrib {
+  opacity: 0.7;
+}
