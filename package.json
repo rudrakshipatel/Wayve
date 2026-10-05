@@ -1,0 +1,27 @@
+{
+  "name": "wave",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "check": "turbo run typecheck lint test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:test": "bash supabase/tests/run.sh"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "eslint": "^9.39.0",
+    "prettier": "^3.6.0",
+    "turbo": "^2.11.0",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^4.1.0"
+  },
+  "type": "module"
+}
