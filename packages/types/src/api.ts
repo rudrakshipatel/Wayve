@@ -57,4 +57,5 @@ export const EDGE_FUNCTIONS = {
   journeyControl: "journey-control",
   shareLink: "share-link",
   resolveShare: "resolve-share",
+  deleteAccount: "delete-account",
 } as const;

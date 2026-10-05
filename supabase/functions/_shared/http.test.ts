@@ -86,9 +86,17 @@ describe("createServer", () => {
 });
 
 describe("clientIp", () => {
-  it("uses the first forwarded address", () => {
+  it("prefers proxy-set headers over client-controlled ones", () => {
+    const spoofed = new Request("https://fn.test", {
+      headers: { "x-forwarded-for": "1.1.1.1, 203.0.113.9", "cf-connecting-ip": "198.51.100.4" },
+    });
+    expect(clientIp(spoofed)).toBe("198.51.100.4");
+    const real = new Request("https://fn.test", { headers: { "x-real-ip": "198.51.100.5" } });
+    expect(clientIp(real)).toBe("198.51.100.5");
+  });
+  it("falls back to the proxy-appended forwarded entry", () => {
     const req = new Request("https://fn.test", {
-      headers: { "x-forwarded-for": "203.0.113.9, 10.0.0.1" },
+      headers: { "x-forwarded-for": "6.6.6.6, 203.0.113.9" },
     });
     expect(clientIp(req)).toBe("203.0.113.9");
     expect(clientIp(new Request("https://fn.test"))).toBe("unknown");

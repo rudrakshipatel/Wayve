@@ -248,6 +248,12 @@ export function createLocalApi(): WaveApi {
       });
     },
 
+    deleteAccount() {
+      journeys.clear();
+      locations.splice(0, locations.length);
+      return Promise.resolve({ deleted: true as const });
+    },
+
     resolveShare() {
       return Promise.reject(
         new WaveApiError("not_found", "Share links need the Wave backend", 404),

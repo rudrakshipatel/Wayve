@@ -55,6 +55,12 @@ function mapboxClient(): MapboxClient | null {
   return mapbox;
 }
 
+/** Deletes an auth user with the service role (cascades to all Wave data). */
+export async function deleteAuthUser(userId: string): Promise<void> {
+  const { error } = await adminClient().auth.admin.deleteUser(userId);
+  if (error) throw error;
+}
+
 export function serve<T>(
   handler: Handler<T>,
   options: {

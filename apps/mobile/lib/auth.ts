@@ -6,7 +6,7 @@ import * as WebBrowser from "expo-web-browser";
 import { Platform } from "react-native";
 import { create } from "zustand";
 import { isBackendConfigured } from "./env";
-import { getSupabase } from "./supabase";
+import { getApi, getSupabase } from "./supabase";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -21,6 +21,7 @@ interface AuthState {
   readonly signInWithGoogle: () => Promise<void>;
   readonly signInWithApple: () => Promise<void>;
   readonly signOut: () => Promise<void>;
+  readonly deleteAccount: () => Promise<void>;
 }
 
 const isGuest = (s: Session | null): boolean => Boolean(s?.user.is_anonymous);
@@ -117,6 +118,12 @@ export const useAuth = create<AuthState>((set, get) => ({
       ? await supabase.auth.linkIdentity(params)
       : await supabase.auth.signInWithIdToken(params);
     if (error) throw error;
+  },
+
+  async deleteAccount() {
+    await getApi().deleteAccount();
+    if (!isBackendConfigured()) return;
+    await get().signOut();
   },
 
   async signOut() {

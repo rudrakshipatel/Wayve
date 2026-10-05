@@ -31,9 +31,20 @@ export function corsHeaders(request: Request, config: FunctionConfig): Record<st
   return headers;
 }
 
+/**
+ * Client address for rate limiting. Headers set by the edge proxy are preferred; the
+ * first X-Forwarded-For entry is client-controlled, so it is only a last resort.
+ */
 export function clientIp(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  return forwarded?.split(",")[0]?.trim() ?? request.headers.get("cf-connecting-ip") ?? "unknown";
+  const trusted = request.headers.get("cf-connecting-ip") ?? request.headers.get("x-real-ip");
+  if (trusted) return trusted.trim();
+  const forwarded = request.headers
+    .get("x-forwarded-for")
+    ?.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  // The right-most entry was appended by the nearest proxy and cannot be forged by the client.
+  return forwarded?.[forwarded.length - 1] ?? "unknown";
 }
 
 function json(status: number, body: unknown, headers: Record<string, string>): Response {

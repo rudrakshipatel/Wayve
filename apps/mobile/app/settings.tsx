@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { ShieldCheck } from "lucide-react-native";
+import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { ScreenHeader } from "@/components/Chrome";
 import { Button, Card, Text } from "@/components/ui";
@@ -9,7 +10,10 @@ import { useWaveColors } from "@/lib/theme";
 
 export default function Settings() {
   const colors = useWaveColors();
-  const { session, isGuest, signOut } = useAuth();
+  const { session, isGuest, signOut, deleteAccount } = useAuth();
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   return (
     <View className="flex-1 bg-bg">
       <ScreenHeader title="Account" />
@@ -66,6 +70,62 @@ export default function Settings() {
             router.push("/locations");
           }}
         />
+        <Card className="mt-4">
+          <Text variant="label">Delete account</Text>
+          <Text variant="caption" className="mt-1">
+            Permanently deletes your account, journeys, saved places and share links. Anyone
+            watching a shared journey will see that it has ended. This can't be undone.
+          </Text>
+          {error ? (
+            <Text variant="caption" className="mt-2 text-coral">
+              {error}
+            </Text>
+          ) : null}
+          <View className="mt-4 flex-row gap-3">
+            {confirming ? (
+              <>
+                <Button
+                  className="flex-1"
+                  variant="secondary"
+                  label="Cancel"
+                  onPress={() => {
+                    setConfirming(false);
+                  }}
+                />
+                <Button
+                  className="flex-1"
+                  variant="danger"
+                  label="Delete everything"
+                  loading={deleting}
+                  onPress={() => {
+                    setDeleting(true);
+                    setError(null);
+                    deleteAccount()
+                      .then(() => {
+                        router.replace("/");
+                      })
+                      .catch((e: unknown) => {
+                        setError(e instanceof Error ? e.message : "Couldn't delete your account");
+                      })
+                      .finally(() => {
+                        setDeleting(false);
+                        setConfirming(false);
+                      });
+                  }}
+                />
+              </>
+            ) : (
+              <Button
+                className="flex-1"
+                variant="danger"
+                label="Delete account…"
+                onPress={() => {
+                  setConfirming(true);
+                }}
+              />
+            )}
+          </View>
+        </Card>
       </ScrollView>
     </View>
   );

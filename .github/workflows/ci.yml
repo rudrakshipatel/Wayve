@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Typecheck, lint, unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm check
+
+  database:
+    name: Migrations, RLS and edge-function integration tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGPASSWORD: postgres
+      PSQL: psql -h localhost -U postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:test
+      - run: pnpm test:integration
+
+  web-e2e:
+    name: Share page (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @wave/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @wave/web build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+      - run: pnpm --filter @wave/web test:e2e
+
+  mobile:
+    name: Mobile bundles and MVP flow (Playwright on web build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Bundle iOS and Android JavaScript
+        working-directory: apps/mobile
+        run: npx expo export --platform ios --platform android --output-dir /tmp/native-bundle
+        env:
+          CI: "1"
+      - run: pnpm --filter @wave/mobile build:web
+        env:
+          CI: "1"
+      - run: pnpm --filter @wave/mobile exec playwright install --with-deps chromium
+      - run: pnpm --filter @wave/mobile test:e2e

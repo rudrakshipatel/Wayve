@@ -57,3 +57,6 @@ verify_jwt = false
 
 [functions.resolve-share]
 verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false

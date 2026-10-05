@@ -41,7 +41,7 @@ export default tseslint.config(
   },
   {
     // CommonJS tool configs (Metro, Babel, Tailwind).
-    files: ["apps/mobile/*.js", "apps/*/scripts/**/*.mjs"],
+    files: ["apps/mobile/*.js"],
     languageOptions: {
       sourceType: "commonjs",
       globals: {
@@ -52,6 +52,12 @@ export default tseslint.config(
       },
     },
     rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
+  {
+    // Node build/test scripts (ESM).
+    files: ["apps/*/scripts/**/*.mjs", "supabase/functions/scripts/**/*.mjs"],
+    languageOptions: { globals: { process: "readonly", console: "readonly" } },
+    rules: { "no-console": "off" },
   },
   {
     files: ["**/*.js", "**/*.mjs", "**/*.cjs"],

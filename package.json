@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:test": "bash supabase/tests/run.sh",
-    "test:integration": "bash supabase/tests/integration.sh"
+    "test:integration": "bash supabase/tests/integration.sh",
+    "functions:vendor": "node supabase/functions/scripts/vendor.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",

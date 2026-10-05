@@ -256,3 +256,21 @@ interface in its own package and must use documented, public APIs only.
 | 10    | History, replay (1/2/5/10×), scheduling                             |                                                 |
 | 11    | Auth providers (email/Google/Apple), rate limits, hardening         | security review                                 |
 | 12    | E2E tests, performance, Vercel + Supabase deployment                |                                                 |
+
+## 9. Implementation notes
+
+- **Edge functions are thin.** Each `supabase/functions/<name>/index.ts` wires Deno
+  (env, supabase-js, auth) to a pure handler in `_shared/handlers`. Handlers talk to a
+  repository that only calls SQL functions, so integration tests run the same code
+  against Postgres via `pg`. Shared packages are vendored into the functions folder at
+  deploy time (`pnpm functions:vendor`).
+- **Determinism contract.** Routes are rounded to 1e-6° before compilation and stored as
+  is; viewers rebuild the timeline with `planFromStoredSegments(seed, segments)` and get
+  bit-identical results (asserted in integration tests). `ENGINE_VERSION` is stored per
+  route; bump it whenever compiled output changes.
+- **Preview mode.** With no Supabase configuration the mobile app uses an on-device
+  backend implementing the same `WaveApi`, so every screen works offline and can be
+  exercised by the Playwright flow test.
+- **Maps.** Mapbox GL (web) and `@rnmapbox/maps` (native) draw the route with a gradient
+  "wake" behind the marker. Without a token, both fall back to a schematic SVG chart with
+  the same per-frame API, framed in the area not covered by panels.

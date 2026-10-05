@@ -149,6 +149,9 @@ export function createWaveApi(supabase: SupabaseClient) {
       }),
     resolveShare: (token: string) =>
       invoke<PublicJourneyView>(EDGE_FUNCTIONS.resolveShare, { token }),
+    /** Permanently deletes the signed-in account and all of its data. */
+    deleteAccount: () =>
+      invoke<{ deleted: true }>(EDGE_FUNCTIONS.deleteAccount, { confirm: "DELETE" }),
 
     // Owner RPCs ---------------------------------------------------------------------
     revokeShareLink: (id: string) => rpc<boolean>("revoke_share_link", { p_share_link_id: id }),
