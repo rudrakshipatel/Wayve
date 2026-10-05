@@ -6,3 +6,4 @@ export * from "./sample.ts";
 export * from "./clock.ts";
 export * from "./route.ts";
 export * from "./provider.ts";
+export * from "./stored.ts";

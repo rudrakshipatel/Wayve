@@ -4,13 +4,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: [
-      "**/node_modules/**",
-      "**/dist/**",
-      "**/.next/**",
-      "**/.expo/**",
-      "supabase/functions/**",
-    ],
+    ignores: ["**/node_modules/**", "**/dist/**", "**/.next/**", "**/.expo/**"],
   },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
@@ -26,6 +20,11 @@ export default tseslint.config(
       // `noUncheckedIndexedAccess` is on; `!` marks index reads already bounds-checked.
       "@typescript-eslint/no-non-null-assertion": "off",
     },
+  },
+  {
+    // Edge functions log server-side errors to the platform log.
+    files: ["supabase/functions/**/*.ts"],
+    rules: { "no-console": ["error", { allow: ["error"] }] },
   },
   {
     files: ["**/*.js"],

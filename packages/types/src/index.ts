@@ -7,3 +7,4 @@ export * from "./realtime.ts";
 export * from "./share.ts";
 export * from "./share-token.ts";
 export * from "./schemas.ts";
+export * from "./api.ts";

@@ -90,3 +90,10 @@ export function parseShareToken(input: string): string | null {
   const candidate = /\/journey\/([^/?#]+)/.exec(trimmed)?.[1] ?? trimmed;
   return isWellFormedShareToken(candidate) ? candidate : null;
 }
+
+/** Random seed for deterministic simulation variation (not a secret). */
+export function generateSeed(): string {
+  const bytes = new Uint8Array(12);
+  webCrypto().getRandomValues(bytes);
+  return bytesToBase64Url(bytes);
+}

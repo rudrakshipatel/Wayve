@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "@wave/types": "../../packages/types/src/index.ts",
+    "@wave/map-utils": "../../packages/map-utils/src/index.ts",
+    "@wave/simulation-engine": "../../packages/simulation-engine/src/index.ts",
+    "zod": "npm:zod@^4.1.0",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@^2.117.0"
+  }
+}

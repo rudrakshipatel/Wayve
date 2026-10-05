@@ -64,12 +64,33 @@ export const journeySegmentSchema = z
   });
 
 export const planJourneyInputSchema = z.object({
+  kind: z.literal("journey").default("journey"),
   title: trimmedName.optional(),
   segments: z.array(journeySegmentSchema).min(1).max(MAX_SEGMENTS),
   /** Optional alternative route index per segment as returned by the routing preview. */
   routeChoice: z.array(z.number().int().min(0).max(2)).max(MAX_SEGMENTS).optional(),
 });
 export type PlanJourneyInput = z.input<typeof planJourneyInputSchema>;
+
+/** A static simulated location, shared like a journey that never moves. */
+export const planStaticLocationInputSchema = z.object({
+  kind: z.literal("static"),
+  title: trimmedName.optional(),
+  location: placeSchema,
+});
+export type PlanStaticLocationInput = z.input<typeof planStaticLocationInputSchema>;
+
+export const planRequestSchema = z.union([planStaticLocationInputSchema, planJourneyInputSchema]);
+export type PlanRequest = z.input<typeof planRequestSchema>;
+
+export const routeOptionsInputSchema = z.object({
+  from: coordinateSchema,
+  to: coordinateSchema,
+  travelMode: travelModeSchema,
+});
+export type RouteOptionsInput = z.input<typeof routeOptionsInputSchema>;
+
+export const resolveShareInputSchema = z.object({ token: z.string().max(64) });
 
 export const sessionActionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("start") }),
@@ -85,9 +106,19 @@ export const sessionActionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("seek"), simMs: z.number().min(0) }),
 ]);
 
+/** Actions accepted by journey-control: session actions plus server-resolved conveniences. */
+export const controlActionSchema = z.union([
+  sessionActionSchema,
+  z.object({
+    type: z.literal("skip_to_waypoint"),
+    index: z.number().int().min(0).max(MAX_SEGMENTS),
+  }),
+]);
+export type ControlAction = z.infer<typeof controlActionSchema>;
+
 export const journeyControlInputSchema = z.object({
   journeyId: z.uuid(),
-  action: sessionActionSchema,
+  action: controlActionSchema,
 });
 export type JourneyControlInput = z.infer<typeof journeyControlInputSchema>;
 
