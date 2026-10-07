@@ -1,5 +1,4 @@
--- Server-side session control, scheduled activation/completion, rate limiting and
--- function privileges.
+-- Server-side session control, scheduled activation/completion and rate limiting.
 
 -- Optimistic-concurrency write of a session clock computed by the journey-control edge
 -- function with the shared @wave/simulation-engine state machine.
@@ -118,46 +117,5 @@ begin
   set tokens = tokens - p_cost
   where scope = p_scope and key = p_key;
   return true;
-end;
-$$;
-
-create function public.purge_stale_rows()
-returns void
-language sql
-security definer
-set search_path = ''
-as $$
-  delete from public.rate_limits where updated_at < now() - interval '1 day';
-  delete from public.share_links where expires_at < now() - interval '30 days';
-$$;
-
--- ---------------------------------------------------------------------------
--- Function privileges: nothing is callable unless granted here.
--- ---------------------------------------------------------------------------
-revoke execute on all functions in schema public from public, anon, authenticated;
-
-grant execute on function public.owns_journey(uuid) to authenticated;
-grant execute on function public.can_receive_topic(text) to anon, authenticated;
-grant execute on function public.revoke_share_link(uuid) to authenticated;
-grant execute on function public.revoke_all_share_links(uuid) to authenticated;
-
-grant execute on function public.get_shared_journey(text) to service_role;
-grant execute on function public.apply_session_clock(uuid, bigint, public.journey_status, double precision, double precision, double precision, bigint) to service_role;
-grant execute on function public.advance_journey_sessions() to service_role;
-grant execute on function public.consume_rate_limit(text, text, integer, double precision, integer) to service_role;
-grant execute on function public.purge_stale_rows() to service_role;
-
-alter default privileges in schema public revoke execute on functions from public, anon, authenticated;
-
--- ---------------------------------------------------------------------------
--- Scheduling (pg_cron is available on Supabase; skipped where it is not installed).
--- ---------------------------------------------------------------------------
-do $$
-begin
-  if exists (select 1 from pg_available_extensions where name = 'pg_cron') then
-    create extension if not exists pg_cron;
-    perform cron.schedule('wave-advance-sessions', '* * * * *', 'select public.advance_journey_sessions()');
-    perform cron.schedule('wave-purge-stale', '17 3 * * *', 'select public.purge_stale_rows()');
-  end if;
 end;
 $$;

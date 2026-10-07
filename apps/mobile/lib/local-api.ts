@@ -243,7 +243,7 @@ export function createLocalApi(): WaveApi {
       return Promise.resolve({
         id: link.id,
         token,
-        url: `${env.shareBaseUrl}/journey/${token}`,
+        url: `${env.shareBaseUrl || "https://wave.app"}/journey/${token}`,
         expiresAt: link.expiresAt,
       });
     },

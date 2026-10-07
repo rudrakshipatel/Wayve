@@ -25,8 +25,7 @@ supabase login
 supabase link --project-ref <project-ref>
 supabase db push                       # applies supabase/migrations
 pnpm functions:vendor                  # copies shared packages into supabase/functions/_vendor
-supabase functions deploy              # plan-journey, route-options, journey-control,
-                                       # share-link, resolve-share, delete-account
+supabase functions deploy              # one function, wave-api, serving /wave-api/<route>
 supabase secrets set \
   MAPBOX_SECRET_TOKEN=<secret token> \
   WAVE_SHARE_BASE_URL=https://<your web domain> \
@@ -37,20 +36,24 @@ No custom domain yet? Use the Vercel URL (`https://<project>.vercel.app`) for bo
 and update them when the domain is added — links already shared keep their old host.
 
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are provided to functions automatically.
+All three secrets are optional to get started: without `MAPBOX_SECRET_TOKEN` journeys follow
+a straight great-circle path instead of roads, without `WAVE_SHARE_BASE_URL` the app builds
+share links from its own `EXPO_PUBLIC_SHARE_BASE_URL`, and without `WAVE_ALLOWED_ORIGINS`
+any origin may call the API (it authenticates with bearer tokens, not cookies).
 
 Dashboard settings:
 
-1. **Database → Extensions:** enable `pg_cron`, then re-run
-   `supabase db push` (or run the `do $$ … cron.schedule … $$` block from migration 5) so
-   scheduled journeys activate and finished ones complete with every client closed.
+1. **Scheduler:** `supabase db push` enables `pg_cron` and schedules the jobs (migration
+   `…_maintenance.sql`, safe to paste into the SQL editor by hand) so scheduled journeys
+   activate and finished ones complete with every client closed.
 2. **Realtime → Settings:** turn **off** "Allow public access" so only private,
    RLS-authorised channels are accepted.
 3. **Authentication → Sign In / Providers:** enable Email (OTP), Google, Apple and
    **Anonymous sign-ins** (guests explore first, then link an identity).
 4. **Authentication → URL configuration:** site URL = your web URL; add redirect URLs
    `wave://auth-callback` and `https://<your web domain>/auth/callback`.
-5. **Authentication → Emails → Templates:** Wave signs in with a 6-digit code, so the
-   templates must send `{{ .Token }}` — see [Email templates](#email-templates).
+5. **Authentication → Emails → Templates:** nothing to change; the default emails' link
+   signs in — see [Email templates](#email-templates).
 6. **Authentication → Rate limits:** keep the defaults or tighten for OTP emails.
 
 The `Deploy Supabase` GitHub workflow repeats steps above on every push to `main` once

@@ -43,7 +43,11 @@ export async function routeOptions(
   const a = toLngLat(from);
   const b = toLngLat(to);
   if (haversineDistance(a, b) < 1) return [{ coordinates: [a], distanceM: 0, durationS: 0 }];
-  if (!mapbox) throw new ApiError(503, "routing_unavailable", "Routing is not configured");
+  if (!mapbox) {
+    // No Mapbox token configured yet: simulate along the direct great-circle path.
+    const coordinates = straightLine(a, b, 200).map(roundCoordinate);
+    return [{ coordinates, distanceM: haversineDistance(a, b), durationS: 0 }];
+  }
   try {
     const routes = await mapbox.directions(TRAVEL_MODE_ROUTING_PROFILE[mode], [a, b], {
       alternatives: true,

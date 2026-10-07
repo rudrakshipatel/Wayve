@@ -32,8 +32,8 @@ This document covers the eight design topics that come before implementation:
  ┌──────────▼────────────────────────────────────────▼───────────────┐
  │ Supabase                                                          │
  │  Auth (email, Google, Apple, anonymous)                           │
- │  Edge Functions: plan-journey, journey-control, share-link,       │
- │                  resolve-share                                    │
+ │  Edge Function wave-api: plan-journey, route-options,             │
+ │    journey-control, share-link, resolve-share, delete-account     │
  │  Postgres + RLS: profiles, saved_locations, journeys, …           │
  │  Realtime: private broadcast channels (state events, not coords)  │
  │  pg_cron: activate scheduled journeys / complete finished ones    │

@@ -41,22 +41,7 @@ enabled = true
 client_id = "env(SUPABASE_AUTH_APPLE_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_APPLE_SECRET)"
 
-# Edge functions verify the caller's JWT themselves (supabase.auth.getUser), so the gateway
-# check is disabled; resolve-share is public by design.
-[functions.plan-journey]
-verify_jwt = false
-
-[functions.route-options]
-verify_jwt = false
-
-[functions.journey-control]
-verify_jwt = false
-
-[functions.share-link]
-verify_jwt = false
-
-[functions.resolve-share]
-verify_jwt = false
-
-[functions.delete-account]
+# The wave-api function verifies the caller's JWT itself (supabase.auth.getUser) and serves
+# the public resolve-share route, so the gateway check is disabled.
+[functions.wave-api]
 verify_jwt = false

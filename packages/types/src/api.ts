@@ -51,11 +51,12 @@ export interface CreateShareLinkResult {
   readonly expiresAt: string;
 }
 
+/** Routes of the single `wave-api` edge function (functions.invoke paths). */
 export const EDGE_FUNCTIONS = {
-  planJourney: "plan-journey",
-  routeOptions: "route-options",
-  journeyControl: "journey-control",
-  shareLink: "share-link",
-  resolveShare: "resolve-share",
-  deleteAccount: "delete-account",
+  planJourney: "wave-api/plan-journey",
+  routeOptions: "wave-api/route-options",
+  journeyControl: "wave-api/journey-control",
+  shareLink: "wave-api/share-link",
+  resolveShare: "wave-api/resolve-share",
+  deleteAccount: "wave-api/delete-account",
 } as const;

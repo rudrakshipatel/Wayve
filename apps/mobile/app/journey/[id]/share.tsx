@@ -14,10 +14,10 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { Linking, Platform, Pressable, ScrollView, Share, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import type { CreateShareLinkResult, ShareLinkInfo } from "@wave/types";
+import { buildShareUrl, type CreateShareLinkResult, type ShareLinkInfo } from "@wave/types";
 import { Button, Card, Chip, Text } from "@/components/ui";
 import { track } from "@/lib/analytics";
-import { isBackendConfigured } from "@/lib/env";
+import { env, isBackendConfigured } from "@/lib/env";
 import { formatDay, formatTime } from "@/lib/format";
 import {
   SHARE_TTL_OPTIONS,
@@ -63,7 +63,8 @@ export default function ShareJourney() {
     setError(null);
     try {
       const created = await getApi().createShareLink(id, ttl);
-      setLink(created);
+      // Links open on the web viewer this app is configured with (e.g. the Vercel URL).
+      setLink(env.shareBaseUrl ? { ...created, url: buildShareUrl(env.shareBaseUrl, created.token) } : created);
       track("share_link_created", { ttlHours: ttl });
       await reload();
     } catch (e) {
