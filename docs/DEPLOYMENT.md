@@ -49,10 +49,8 @@ Dashboard settings:
    **Anonymous sign-ins** (guests explore first, then link an identity).
 4. **Authentication → URL configuration:** site URL = your web URL; add redirect URLs
    `wave://auth-callback` and `https://<your web domain>/auth/callback`.
-5. **Authentication → Emails → Templates:** sign-in uses 6-digit codes. Make sure the
-   **Magic Link** and **Change Email Address** templates contain `{{ .Token }}` (for example
-   "Your Wave code is {{ .Token }}"). Set up custom SMTP before launch; the built-in sender
-   is heavily rate-limited.
+5. **Authentication → Emails → Templates:** Wave signs in with a 6-digit code, so the
+   templates must send `{{ .Token }}` — see [Email templates](#email-templates).
 6. **Authentication → Rate limits:** keep the defaults or tighten for OTP emails.
 
 The `Deploy Supabase` GitHub workflow repeats steps above on every push to `main` once
@@ -132,6 +130,54 @@ Requires the paid [Apple Developer Program](https://developer.apple.com/programs
    callback URL; create a **Key** with Sign In with Apple and download the `.p8`; then add
    the Services ID to Client IDs and generate the secret in Supabase's Apple provider form
    (Apple secrets expire every 6 months).
+
+## Email templates
+
+Supabase's default emails contain a link. Wave's app asks for the **6-digit code**
+instead, so three templates need `{{ .Token }}`. In the Supabase dashboard open
+**Authentication → Emails → Templates** (older dashboards: _Authentication → Email
+Templates_), then for each template below click it, replace **Subject** and **Message
+body**, and press **Save**.
+
+**Confirm signup** — first sign-in of a new email
+
+- Subject: `Your Wave code`
+- Body:
+
+  ```html
+  <h2>Welcome to Wave</h2>
+  <p>Your sign-in code is:</p>
+  <p style="font-size:28px;font-weight:700;letter-spacing:6px">{{ .Token }}</p>
+  <p>It expires in 1 hour. If you didn't request it, ignore this email.</p>
+  ```
+
+**Magic link** — signing in again
+
+- Subject: `Your Wave code`
+- Body:
+
+  ```html
+  <h2>Sign in to Wave</h2>
+  <p>Your sign-in code is:</p>
+  <p style="font-size:28px;font-weight:700;letter-spacing:6px">{{ .Token }}</p>
+  <p>It expires in 1 hour. If you didn't request it, ignore this email.</p>
+  ```
+
+**Change email address** — a guest saving their journeys with an email
+
+- Subject: `Confirm your email for Wave`
+- Body:
+
+  ```html
+  <h2>Keep your Wave journeys</h2>
+  <p>Enter this code in the app to add {{ .NewEmail }} to your account:</p>
+  <p style="font-size:28px;font-weight:700;letter-spacing:6px">{{ .Token }}</p>
+  <p>If you didn't request this, ignore this email.</p>
+  ```
+
+Optional: **Authentication → Providers → Email → Email OTP Expiration** sets how long codes
+last (default 3600 seconds). Before launch, configure **custom SMTP** (Authentication →
+Emails → SMTP Settings); the built-in sender only allows a few emails per hour.
 
 ## 4. Production checklist
 

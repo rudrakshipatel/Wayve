@@ -1,5 +1,24 @@
 # Running Wave in Xcode
 
+## Quick start
+
+1. Download `Wayve.zip` (or clone the repository) into **Downloads** and double-click it —
+   you get `~/Downloads/Wayve`.
+2. Open **Terminal** and run:
+
+   ```sh
+   cd ~/Downloads/Wayve && bash scripts/mac-setup.sh
+   ```
+
+   It checks Xcode, installs Homebrew, Node 22, pnpm and CocoaPods if missing, asks for your
+   Supabase URL/key, Vercel URL and bundle ID, installs dependencies, generates the iOS
+   project, opens it in Xcode and starts the dev server.
+
+3. In Xcode: **Wave** target → **Signing & Capabilities** → choose your **Team**, pick a
+   simulator or your iPhone, press **⌘R**.
+
+The rest of this page explains each step.
+
 The iOS project is generated from `apps/mobile/app.config.ts` by `expo prebuild`, so it
 always matches the app's config (bundle ID, Sign in with Apple, URL scheme, permissions,
 Mapbox). It is not committed; regenerate it whenever config or native dependencies change.
