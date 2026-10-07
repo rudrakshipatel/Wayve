@@ -21,6 +21,8 @@ export function getSupabase(): SupabaseClient {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: Platform.OS === "web",
+        // OAuth (Google) returns ?code=… that lib/auth exchanges for a session.
+        flowType: "pkce",
       },
     });
     // Refresh tokens only while the app is in the foreground.

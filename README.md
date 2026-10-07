@@ -8,7 +8,8 @@ Wave simulates positions **inside Wave only**. It never alters a device's real l
 and never feeds simulated coordinates to other apps or services.
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — design, schema, realtime, engine, security
-- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — Supabase, Vercel and EAS setup
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — Supabase, Vercel, EAS, Google/Apple sign-in setup
+- [docs/IOS.md](docs/IOS.md) — generate, open and run the iOS project in Xcode
 
 ## Repository layout
 

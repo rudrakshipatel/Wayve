@@ -12,7 +12,10 @@
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
     "build:web": "expo export --platform web --output-dir dist",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "xcode": "expo prebuild --platform ios && xed ios",
+    "ios:sim": "expo run:ios",
+    "ios:device": "expo run:ios --device"
   },
   "dependencies": {
     "@expo-google-fonts/instrument-sans": "^0.4.2",

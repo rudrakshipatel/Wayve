@@ -15,3 +15,7 @@ test-results/
 playwright-report/
 apps/mobile/dist/
 _vendor/
+
+# Generated native projects (expo prebuild); regenerate with `pnpm --filter @wave/mobile xcode`
+apps/mobile/ios/
+apps/mobile/android/
