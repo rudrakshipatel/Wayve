@@ -133,11 +133,16 @@ Requires the paid [Apple Developer Program](https://developer.apple.com/programs
 
 ## Email templates
 
-Supabase's default emails contain a link. Wave's app asks for the **6-digit code**
-instead, so three templates need `{{ .Token }}`. In the Supabase dashboard open
-**Authentication → Emails → Templates** (older dashboards: _Authentication → Email
-Templates_), then for each template below click it, replace **Subject** and **Message
-body**, and press **Save**.
+**Nothing to change to get started.** Supabase's default emails contain a **Sign in**
+link; Wave sends it with `wave://auth-callback` as the destination, so tapping it on the
+iPhone opens Wave and signs in. Only make sure `wave://auth-callback` is listed under
+**Authentication → URL Configuration → Redirect URLs**.
+
+On the free plan the templates can only be edited after setting up **custom SMTP**
+(Authentication → Emails → "Set up SMTP"), which needs a sender on your own verified
+domain (e.g. with Resend, Postmark or SES). Once you have that, you can optionally switch
+to 6-digit codes — useful when people read email on another device — by adding
+`{{ .Token }}` to these templates:
 
 **Confirm signup** — first sign-in of a new email
 

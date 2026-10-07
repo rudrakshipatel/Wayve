@@ -1,7 +1,7 @@
 import * as AppleAuthentication from "expo-apple-authentication";
 import { router } from "expo-router";
 import { X } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Platform, Pressable, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Text } from "@/components/ui";
@@ -14,12 +14,20 @@ export default function SignIn() {
   const colors = useWaveColors();
   const insets = useSafeAreaInsets();
   const { isGuest, sendEmailCode, verifyEmailCode, signInWithGoogle, signInWithApple } = useAuth();
+  const session = useAuth((s) => s.session);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [stage, setStage] = useState<"email" | "code">("email");
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [appleAvailable, setAppleAvailable] = useState(false);
+
+  // Close this sheet once the email link (handled at /auth-callback) completes sign-in.
+  const startedAsGuest = useRef(isGuest);
+  useEffect(() => {
+    if (stage === "code" && startedAsGuest.current && session && !session.user.is_anonymous)
+      router.back();
+  }, [session, stage]);
 
   useEffect(() => {
     if (Platform.OS === "ios") void AppleAuthentication.isAvailableAsync().then(setAppleAvailable);
@@ -118,7 +126,7 @@ export default function SignIn() {
               />
               <Button
                 size="lg"
-                label="Email me a code"
+                label="Email me a sign-in link"
                 disabled={!/^\S+@\S+\.\S+$/.test(email.trim())}
                 loading={busy === "email"}
                 onPress={() =>
@@ -134,7 +142,11 @@ export default function SignIn() {
             </>
           ) : (
             <>
-              <Text variant="caption">Enter the 6-digit code sent to {email.trim()}.</Text>
+              <Text variant="label">Check your email</Text>
+              <Text variant="caption">
+                We sent a message to {email.trim()}. Open it on this iPhone and tap “Sign in” — Wave
+                opens and signs you in. If the email shows a 6-digit code instead, enter it here:
+              </Text>
               <TextInput
                 value={code}
                 onChangeText={setCode}

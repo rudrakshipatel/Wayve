@@ -6,6 +6,7 @@ import * as WebBrowser from "expo-web-browser";
 import { Platform } from "react-native";
 import { create } from "zustand";
 import { isBackendConfigured } from "./env";
+import type { AuthCallback } from "./auth-callback";
 import { getApi, getSupabase } from "./supabase";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -18,6 +19,8 @@ interface AuthState {
   readonly init: () => Promise<void>;
   readonly sendEmailCode: (email: string) => Promise<void>;
   readonly verifyEmailCode: (email: string, code: string) => Promise<void>;
+  /** Completes sign-in from a wave://auth-callback deep link (email link or OAuth). */
+  readonly completeCallback: (callback: AuthCallback) => Promise<void>;
   readonly signInWithGoogle: () => Promise<void>;
   readonly signInWithApple: () => Promise<void>;
   readonly signOut: () => Promise<void>;
@@ -56,10 +59,16 @@ export const useAuth = create<AuthState>((set, get) => ({
   async sendEmailCode(email) {
     const supabase = getSupabase();
     const trimmed = email.trim().toLowerCase();
+    // The email's "Sign in" link reopens the app at wave://auth-callback; a 6-digit code
+    // works too when the Supabase email templates include {{ .Token }}.
+    const emailRedirectTo = Linking.createURL("auth-callback");
     // Guests attach the email to their existing account so their journeys are kept.
     const { error } = get().isGuest
-      ? await supabase.auth.updateUser({ email: trimmed })
-      : await supabase.auth.signInWithOtp({ email: trimmed, options: { shouldCreateUser: true } });
+      ? await supabase.auth.updateUser({ email: trimmed }, { emailRedirectTo })
+      : await supabase.auth.signInWithOtp({
+          email: trimmed,
+          options: { shouldCreateUser: true, emailRedirectTo },
+        });
     if (error) throw error;
   },
 
@@ -70,6 +79,21 @@ export const useAuth = create<AuthState>((set, get) => ({
       type: get().isGuest ? "email_change" : "email",
     });
     if (error) throw error;
+  },
+
+  async completeCallback(callback) {
+    const supabase = getSupabase();
+    if (callback.kind === "error") throw new Error(callback.message);
+    if (callback.kind === "code") {
+      const { error } = await supabase.auth.exchangeCodeForSession(callback.code);
+      if (error) throw error;
+    } else if (callback.kind === "token_hash") {
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: callback.tokenHash,
+        type: callback.type,
+      });
+      if (error) throw error;
+    }
   },
 
   async signInWithGoogle() {
