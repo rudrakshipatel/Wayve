@@ -99,14 +99,19 @@ export function handlerServer<T>(
  * Serves several handlers from one function, routed by the last path segment:
  * /functions/v1/wave-api/<route>.
  */
-export function serveRoutes(routes: Readonly<Record<string, (request: Request) => Promise<Response>>>): void {
+export function serveRoutes(
+  routes: Readonly<Record<string, (request: Request) => Promise<Response>>>,
+): void {
   Deno.serve((request) => {
     const name = new URL(request.url).pathname.split("/").filter(Boolean).pop() ?? "";
     const route = routes[name];
     if (route) return route(request);
-    return new Response(JSON.stringify({ error: { code: "not_found", message: "Unknown endpoint" } }), {
-      status: 404,
-      headers: { "content-type": "application/json", "access-control-allow-origin": "*" },
-    });
+    return new Response(
+      JSON.stringify({ error: { code: "not_found", message: "Unknown endpoint" } }),
+      {
+        status: 404,
+        headers: { "content-type": "application/json", "access-control-allow-origin": "*" },
+      },
+    );
   });
 }

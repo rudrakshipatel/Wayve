@@ -64,7 +64,11 @@ export default function ShareJourney() {
     try {
       const created = await getApi().createShareLink(id, ttl);
       // Links open on the web viewer this app is configured with (e.g. the Vercel URL).
-      setLink(env.shareBaseUrl ? { ...created, url: buildShareUrl(env.shareBaseUrl, created.token) } : created);
+      setLink(
+        env.shareBaseUrl
+          ? { ...created, url: buildShareUrl(env.shareBaseUrl, created.token) }
+          : created,
+      );
       track("share_link_created", { ttlHours: ttl });
       await reload();
     } catch (e) {

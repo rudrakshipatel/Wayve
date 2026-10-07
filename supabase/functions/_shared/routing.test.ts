@@ -10,6 +10,9 @@ describe("routeOptions without Mapbox", () => {
     expect(rest).toHaveLength(0);
     expect(option!.coordinates.length).toBeGreaterThan(50);
     expect(option!.coordinates[0]).toEqual([72.5714, 23.0225]);
-    expect(option!.distanceM).toBeCloseTo(haversineDistance([72.5714, 23.0225], [72.6369, 23.2156]), 0);
+    expect(option!.distanceM).toBeCloseTo(
+      haversineDistance([72.5714, 23.0225], [72.6369, 23.2156]),
+      0,
+    );
   });
 });
